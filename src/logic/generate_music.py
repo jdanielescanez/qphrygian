@@ -8,6 +8,7 @@ from music21.chord import Chord
 from music21.stream import Stream
 from math import sqrt
 
+
 def generate_notes(model, sequences, unique_pitches, unique_durations, notes_number):
     base = sequences[np.random.randint(0, len(sequences) - 1)]
     base = base.tolist()
@@ -18,7 +19,8 @@ def generate_notes(model, sequences, unique_pitches, unique_durations, notes_num
 
         pitch = np.argmax(prediction[0][:len(unique_pitches)])
         duration = np.argmax(prediction[0][len(unique_pitches):])
-        prediction_output.append([unique_pitches[pitch], unique_durations[duration]])
+        prediction_output.append(
+            [unique_pitches[pitch], unique_durations[duration]])
 
         base.insert(0, duration)
         base.insert(0, pitch)
@@ -31,12 +33,14 @@ def generate_notes(model, sequences, unique_pitches, unique_durations, notes_num
 
     return prediction_output
 
+
 def normalize_pitch(pitch):
     if pitch < 24:
         return pitch + 12
     if pitch > 84:
         return pitch - 12
     return pitch
+
 
 def pitch_into_scale(pitch, scale):
     pivot_index = len(scale) // 2
@@ -60,6 +64,7 @@ def pitch_into_scale(pitch, scale):
         else:
             return pitch_into_scale(pitch, scale[pivot_index:])
 
+
 def calculate_positive_pitch(pitch):
     if pitch == 0:
         return pitch
@@ -67,11 +72,13 @@ def calculate_positive_pitch(pitch):
         return int(pitch / sqrt(pitch**2) * 12)
     return pitch % 12
 
+
 def show_in_mscore(stream):
     try:
         stream.show()
     except Exception as exception:
         print("Couldn't open in MuseScore:", exception)
+
 
 def generate_midi(initial_note, notes, instrument, scale):
     stream = [instruments[instrument]]
@@ -88,7 +95,8 @@ def generate_midi(initial_note, notes, instrument, scale):
         dif = pitch - initial_pitch
         relative_pitch = calculate_pitch(dif)
         relative_positive_pitch = calculate_positive_pitch(relative_pitch)
-        pitch += pitch_into_scale(relative_positive_pitch, scale) - relative_pitch
+        pitch += pitch_into_scale(relative_positive_pitch,
+                                  scale) - relative_pitch
         if note[1] != 0.0:
             if len(chord) == 0:
                 new_note = Note(pitch)
@@ -103,7 +111,6 @@ def generate_midi(initial_note, notes, instrument, scale):
         else:
             chord.add(pitch)
 
-    
     dif = (pitch - initial_pitch) % 12
     pitch -= dif + (-12 if dif > 6 else 0)
     new_note = Note(pitch)
@@ -114,9 +121,10 @@ def generate_midi(initial_note, notes, instrument, scale):
     show_in_mscore(stream)
     return stream
 
+
 def generate(melodies, weights_file, output_file, initial_note="a3",
-    instrument="Piano", scale="Chromatic", notes_number=100
-):
+             instrument="Piano", scale="Chromatic", notes_number=100
+             ):
     with open(melodies, "r") as input:
         melodies = json.loads(input.read())
         initial_note = Note(initial_note)
@@ -126,11 +134,13 @@ def generate(melodies, weights_file, output_file, initial_note="a3",
         unique_pitches = list(set(pitches))
         unique_durations = list(set(durations))
         output_size = len(unique_pitches) + len(unique_durations)
-        (sequences, outputs) = prepare_sequences(melodies, unique_pitches, unique_durations)
+        (sequences, outputs) = prepare_sequences(
+            melodies, unique_pitches, unique_durations)
 
         network = create_network(sequences, output_size)
         network.load_weights(weights_file)
-        notes = generate_notes(network, sequences, unique_pitches, unique_durations, notes_number)
+        notes = generate_notes(
+            network, sequences, unique_pitches, unique_durations, notes_number)
         midi = generate_midi(initial_note, notes, instrument, scale)
         midi.write('midi', fp=output_file)
         print("Music generated!")
