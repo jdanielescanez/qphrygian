@@ -5,6 +5,7 @@
 from multiprocessing import Pool
 import json
 from music21 import converter
+from music21.stream import Part
 from glob import glob
 
 from .melody import Melody
@@ -17,7 +18,8 @@ def read_melodies_from_file(file: str):
     except Exception:
         print(f"An error ocurred, skipping file: {file}")
         return []
-    return list(map(lambda part: Melody(part), score))
+    parts = filter(lambda stream: isinstance(stream, Part), score)
+    return list(map(lambda part: Melody(part), parts))
 
 
 def process(midi_folder, output_file):

@@ -16,7 +16,7 @@ def process_cli(args):
     if len(args) != 2 or args[0] in ["-h", "--help"]:
         print_process_usage()
         exit()
-    process(*args)
+    process(args[0], args[1])
 
 
 def print_train_usage():
@@ -29,7 +29,7 @@ def train_cli(args):
     if len(args) != 3 or args[0] in ["-h", "--help"]:
         print_train_usage()
         exit()
-    train(*args)
+    train(args[0], args[1], int(args[2]))
 
 
 def print_generate_usage():
@@ -93,7 +93,8 @@ def generate_cli(args):
         else:
             print_generate_usage()
             exit(-1)
-    generate(*args[:3], note, instrument, scale, int(number_of_notes))
+    generate(args[0], args[1], args[2], note,
+             instrument, scale, int(number_of_notes))
 
 
 commands = {

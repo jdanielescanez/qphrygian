@@ -1,5 +1,5 @@
 from music21.note import Note, Rest
-from music21.stream import Stream
+from music21.stream import Part
 from music21.chord import Chord
 from math import sqrt
 
@@ -17,17 +17,16 @@ def calculate_duration(duration):
 
 
 class Melody():
-    def __init__(self, part: Stream):
+    def __init__(self, part: Part):
         self.notes = []
         self.previous_pitch = None
-        if part is not None:
-            for element in part.recurse():
-                if isinstance(element, Note):
-                    self.add_note(element)
-                elif isinstance(element, Chord):
-                    self.add_chord(element)
-                elif isinstance(element, Rest):
-                    self.add_rest(element)
+        for element in part.recurse():
+            if isinstance(element, Note):
+                self.add_note(element)
+            elif isinstance(element, Chord):
+                self.add_chord(element)
+            elif isinstance(element, Rest):
+                self.add_rest(element)
 
     def add_note(self, note: Note):
         duration = calculate_duration(note.quarterLength)
